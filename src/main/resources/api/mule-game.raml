@@ -1,0 +1,51 @@
+#%RAML 1.0
+version: v1
+title: Mule Game
+
+types:
+  ship: !include exchange_modules/ad60b722-6896-428c-8efc-a6f411f1035e/mule-game-data-types/1.0.0/ship.raml
+  player: !include exchange_modules/ad60b722-6896-428c-8efc-a6f411f1035e/mule-game-data-types/1.0.0/player.raml
+
+#Resources
+/player:
+  post:
+    description: Create a new player
+    queryParameters:
+      playerName:
+        type: string
+    responses:
+      201:
+        body:
+          application/json:
+            type: player
+/ship:
+  post:
+    description: Create a new ship
+    responses:
+        201:
+          body:
+            application/json:
+              type: ship
+/move:
+  post:
+    description: Move ships to new locations
+    queryParameters:
+      move:
+        type: string
+/fleet:
+  get:
+    description: Get details on all of a player's ships
+    queryParameters:
+      playerId:
+        type: integer
+    responses:
+      200:
+        body:
+          application/json:
+            type: ship []
+
+
+          
+            
+          
+        

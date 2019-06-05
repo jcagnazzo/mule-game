@@ -1,0 +1,67 @@
+#%RAML 1.0 DataType
+
+properties:
+  shipId:
+    type: integer
+  shipName:
+    type: string
+  playerId:
+    type: integer
+  stats:
+    type: array
+    facets:
+      health:
+        type: integer
+      power:
+        type: integer
+      cargoSpace:
+        type: integer
+      speed:
+        type: integer
+
+  location:
+    type: array
+    facets:
+      xCord:
+        type: integer
+      yCord:
+        type: integer
+      locationType:
+        type: string
+
+  resources:
+    type: array
+    facets:
+      fuel:
+        type: integer
+      water:
+        type: integer
+      carbon:
+        type: integer
+      silicon:
+        type: integer
+
+  crew:
+    type: array
+    facets:
+      navigators:
+        type: integer
+      soldiers:
+        type: integer
+      merchants:
+        type: integer
+      scientists:
+        type: integer
+
+  upgrades:
+    type: array
+    facets:
+      speedBoost:
+        type: integer
+      powerBoost:
+        type: integer
+      healthBoost:
+        type: integer
+
+  
+    
