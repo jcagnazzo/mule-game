@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-    <http:listener-config xmlns:http="http://www.mulesoft.org/schema/mule/http" name="mule-game-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+    <http:listener-config name="httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081"/>
     </http:listener-config>
-    <apikit:config xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" name="mule-game-config" raml="mule-game.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <flow name="mule-game-main">
-        <http:listener xmlns:http="http://www.mulesoft.org/schema/mule/http" config-ref="mule-game-httpListenerConfig" path="/api/*">
+    <apikit:config name="mule-game-config" raml="mule-game.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <db:config name="mg-db" doc:name="Database Config" doc:id="ff42ac20-25d6-4f4b-aaef-76146280e3b8" >
+		<db:my-sql-connection host="${mg.db.host}" port="${mg.db.port}" user="${mg.db.username}" password="${mg.db.password}" database="${mg.db.name}" />
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="e6d5477f-f016-4346-8756-ba71da5f91ac" file="${env}.properties" />
+	<flow name="mule-game-main">
+        <http:listener config-ref="httpListenerConfig" path="/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:response>
             <http:error-response statusCode="#[vars.httpStatus default 500]">
-                <http:body>#[payload]</http:body>
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:body><![CDATA[#[payload]]]></http:body>
             </http:error-response>
         </http:listener>
-        <apikit:router xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" config-ref="mule-game-config" />
+        <apikit:router config-ref="mule-game-config" />
         <error-handler>
             <on-error-propagate type="APIKIT:BAD_REQUEST">
                 <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
@@ -102,10 +105,16 @@ output application/json
     <flow name="post:\move:mule-game-config">
         <logger level="INFO" message="post:\move:mule-game-config" />
     </flow>
-    <flow name="post:\player:mule-game-config">
-        <logger level="INFO" message="post:\player:mule-game-config" />
-    </flow>
     <flow name="post:\ship:mule-game-config">
         <logger level="INFO" message="post:\ship:mule-game-config" />
     </flow>
+	<flow name="post:\player:mule-game-config" doc:id="7a6b51e7-89cd-41aa-a113-86bc5a8f6e16" >
+		<logger level="INFO" doc:name="Logger" doc:id="89ef5a71-06ec-48bb-baf2-7fcc9ee2c827" message='#["Started " ++ flow.name]' />
+		<db:insert doc:name="Create player in MuleGame db" doc:id="8e847ce9-47b7-47b2-b2c7-f30ecfae9dd9" config-ref="mg-db" >
+			<db:sql >insert into PlayerCommon (PlayerName)
+values (:playerName)</db:sql>
+			<db:input-parameters ><![CDATA[#[{'playerName': attributes.queryParams.playerName}]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="66c51f4b-c7c5-4b57-8e9c-23ab7a125324" message='#["Ended " ++ flow.name]' />
+	</flow>
 </mule>
